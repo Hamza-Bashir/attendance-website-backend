@@ -8,7 +8,7 @@ const startServer = async ()=>{
     try {
         db()
         server.listen(port, ()=>{
-            console.log("Server start successfully at port ", port)
+            console.log("Server start successfully at port", port)
         })
     } catch (error) {
         console.log("Server not started successfully")

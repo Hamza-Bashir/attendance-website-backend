@@ -4,7 +4,7 @@ const cors = require("cors");
 const { unless } = require("express-unless");
 const routes = require("./routes");
 const { authenticateRoutes } = require("./config/unlessRoutes");
-const { authenticate } = require("./middlewares/auth.middleware");
+const { authenticate } = require("./middleware/auth.middleware");
 const globalError = require("./controllers/error/globalErrorHandler")
 const app = express();
 

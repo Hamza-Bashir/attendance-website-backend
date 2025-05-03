@@ -12,10 +12,10 @@ module.exports = {
 
     TEXTS:{
         SUCCESS:"",
-        CREATED:"",
-        UNAUTHORIZED:"",
+        CREATED:"Record created successfully",
+        UNAUTHORIZED:"Invalid user",
         NOT_FOUND:"",
-        CONFLICT:"",
+        CONFLICT:"Record already exist",
         REQUIRED:"",
         INTERNAL_SERVER_ERROR:"",
         PASSWORD_NOT_MATCH:""

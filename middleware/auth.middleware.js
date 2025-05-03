@@ -1,4 +1,4 @@
-const { verifyJWTToken } = require("../utils/jwtToken");
+const { verifyJWTToken } = require("../utilis/jwtToken");
 const { STATUS_CODES, TEXTS } = require("../config/constants");
 
 const authenticate = async (req, res, next) => {
@@ -7,7 +7,7 @@ const authenticate = async (req, res, next) => {
   if (!header || !header.startsWith("Bearer")) {
     return res
       .status(STATUS_CODES.UNAUTHORIZED)
-      .json({ message: TEXTS.INVALID_AUTH_TOKEN });
+      .json({ message: TEXTS.UNAUTHORIZED });
   }
 
   const accessToken = header.split(" ")[1];
@@ -16,7 +16,7 @@ const authenticate = async (req, res, next) => {
     if (result.err) {
       res
         .status(STATUS_CODES.UNAUTHORIZED)
-        .json({ message: TEXTS.INVALID_AUTH_TOKEN });
+        .json({ message: TEXTS.UNAUTHORIZED });
     } else {
       req.user = result.decoded;
      
@@ -26,7 +26,7 @@ const authenticate = async (req, res, next) => {
   } else {
     res
       .status(STATUS_CODES.UNAUTHORIZED)
-      .json({ message: TEXTS.NO_AUTH_GIVEN });
+      .json({ message: TEXTS.UNAUTHORIZED });
   }
 };
 
