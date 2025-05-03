@@ -11,14 +11,15 @@ module.exports = {
     },
 
     TEXTS:{
-        SUCCESS:"",
+        SUCCESS:"Record found successfully",
         CREATED:"Record created successfully",
         UNAUTHORIZED:"Invalid user",
-        NOT_FOUND:"",
+        NOT_FOUND:"Record not found",
+        LOGIN:"User login successfully",
         CONFLICT:"Record already exist",
         REQUIRED:"",
         INTERNAL_SERVER_ERROR:"",
-        PASSWORD_NOT_MATCH:""
+        PASSWORD_NOT_MATCH:"Password is not match"
     }
 
 
