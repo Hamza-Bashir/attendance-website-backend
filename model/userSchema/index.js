@@ -19,6 +19,9 @@ const userSch = new mongoose.Schema({
         type:String,
         enum:["admin", "employee"],
         default:"employee"
+    },
+    image:{
+        type:String
     }
 }, {
     timestamps:true
