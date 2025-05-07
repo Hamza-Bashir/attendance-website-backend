@@ -3,8 +3,7 @@ module.exports = {
       path: [
         {url:"/add-user", method:"POST"},
         {url:"/login", method:"POST"},
-        {url:"/all-user", method:"GET"},
-        {url:"/search-user", method:"GET"}
+        {url:"/add-attendance/:id", method:"POST"}
       ],
     },
   };
