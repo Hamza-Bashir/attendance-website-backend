@@ -5,7 +5,6 @@ const {addUserSch, loginUserSch} = require("../../middleware/validation/user.val
 
 router.post("/add-user",validate(addUserSch), userService.addUser)
 router.post("/login",validate(loginUserSch), userService.loginUser)
-router.get("/all-user", userService.getAllUser)
-router.get("/search-user", userService.searchUser)
+
 
 module.exports = router
