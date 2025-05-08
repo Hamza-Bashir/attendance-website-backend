@@ -19,7 +19,10 @@ module.exports = {
         CONFLICT:"Record already exist",
         REQUIRED:"",
         INTERNAL_SERVER_ERROR:"",
-        PASSWORD_NOT_MATCH:"Password is not match"
+        PASSWORD_NOT_MATCH:"Password is not match",
+        ALREADY_PRESENT:"Already present",
+        ATTENDANCE:"Add attendance successfully",
+        ID_REQUIRED:"Id is required"
     }
 
 
