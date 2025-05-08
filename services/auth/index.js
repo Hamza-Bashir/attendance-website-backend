@@ -4,6 +4,8 @@ const User = require("../../model/userSchema/index")
 const uploads = require("../../config/multer")
 const bcrypt = require("bcryptjs")
 const {generateToken} = require("../../utilis/jwtToken")
+const fs = require("fs")
+const path = require("path")
 
 // ------- Add User Api ------------
 
@@ -13,7 +15,7 @@ const addUser = asyncErrorHandler(async (req, res) => {
 
     uploads(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ error: 'File upload failed', details: err.message });
+            return res.status(STATUS_CODES.FAILED).json({ message: TEXTS.FILE_FAILED, details: err.message });
         }
         
         const { name, email, password } = req.body;
@@ -89,13 +91,42 @@ const loginUser = asyncErrorHandler(async (req,res)=>{
 // ------- Update User Api ------------
 
 const updateUser = asyncErrorHandler(async (req,res)=>{
-    console.log("1")
+    uploads(req,res, async (err)=>{
+        if(err){
+            return res.status(STATUS_CODES.FAILED).json({
+                message:TEXTS.FILE_FAILED,
+                details:err.message
+            })
+        }
+    })
     const {user_id} = req.params
     const query = {}
 
     const allowedField = ["name", "email", "password", "image"]
 
-    console.log("2")
+
+    const existingUser = await User.findById(user_id)
+
+    if(!existingUser){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.NOT_FOUND
+        })
+    }
+
+    let imagePath = existingUser.image
+
+
+    if(req.file){
+        const imageName = path.basename(existingUser.image)
+        const oldImagePath = path.join(__dirname, "..", imageName)
+
+        if(fs.existsSync(oldImagePath)){
+            fs.unlinkSync(oldImagePath)
+        }
+        imagePath = req.file ? `uploads/${req.file.filename}`:existingUser.image
+    }
+    
 
     allowedField.forEach((field)=>{
         if(req.body[field] !== undefined){
@@ -103,7 +134,9 @@ const updateUser = asyncErrorHandler(async (req,res)=>{
         }
     })
 
-    console.log(req.body)
+    if(imagePath){
+        query.image = imagePath
+    }
 
     const updatedUser = await User.findByIdAndUpdate(user_id, query, {new:true})
 
