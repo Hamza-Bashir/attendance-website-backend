@@ -10,18 +10,17 @@ const {generateToken} = require("../../utilis/jwtToken")
 
 const addUser = asyncErrorHandler(async (req, res) => {
 
+
     uploads(req, res, async (err) => {
         if (err) {
             return res.status(400).json({ error: 'File upload failed', details: err.message });
         }
-
         
         const { name, email, password } = req.body;
        
-
-        const imagePath = req.file ? req.file.path : null;
+        const imagePath = req.file ? `uploads/${req.file.filename}` : null;
        
-
+ 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(STATUS_CODES.CONFLICT).json({
@@ -31,6 +30,7 @@ const addUser = asyncErrorHandler(async (req, res) => {
         }
 
         const hashPassword = await bcrypt.hash(password, 10)
+       
 
         await User.create({
             name,
@@ -38,6 +38,7 @@ const addUser = asyncErrorHandler(async (req, res) => {
             password:hashPassword,
             image: imagePath
         });
+        
 
         res.status(STATUS_CODES.SUCCESS).json({
             statusCode: STATUS_CODES.SUCCESS,
@@ -45,8 +46,6 @@ const addUser = asyncErrorHandler(async (req, res) => {
         });
     });
 });
-
-
 
 
 
@@ -87,5 +86,33 @@ const loginUser = asyncErrorHandler(async (req,res)=>{
     })
 })
 
+// ------- Update User Api ------------
 
-module.exports = {addUser, loginUser}
+const updateUser = asyncErrorHandler(async (req,res)=>{
+    console.log("1")
+    const {user_id} = req.params
+    const query = {}
+
+    const allowedField = ["name", "email", "password", "image"]
+
+    console.log("2")
+
+    allowedField.forEach((field)=>{
+        if(req.body[field] !== undefined){
+            query[field] = req.body[field]
+        }
+    })
+
+    console.log(req.body)
+
+    const updatedUser = await User.findByIdAndUpdate(user_id, query, {new:true})
+
+    res.status(200).json({
+        message:"Updated User successfully"
+    })
+
+
+})
+
+
+module.exports = {addUser, loginUser, updateUser}

@@ -7,7 +7,8 @@ const { authenticateRoutes } = require("./config/unlessRoutes");
 const { authenticate } = require("./middleware/auth.middleware");
 const globalError = require("./controllers/error/globalErrorHandler")
 const app = express();
-const path = require("path")
+const path = require("path");
+
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
