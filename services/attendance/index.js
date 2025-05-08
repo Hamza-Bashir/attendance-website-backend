@@ -7,11 +7,21 @@ const attendance = require("../../model/attendanceSchema/index")
 // --------- Add attendance ----------
 
 const addAttendance = asyncErrorHandler(async (req,res)=>{
-    console.log("1")
+    
     const {id} = req.params
 
     const now = new Date()
     const startofDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    const existingAttendance = await attendance.findOne({
+        date:startofDay
+    })
+
+    if(existingAttendance){
+        return res.status(400).json({
+            message:"Already present"
+        })
+    }
 
     const newAttendance = await attendance({
         user:id,

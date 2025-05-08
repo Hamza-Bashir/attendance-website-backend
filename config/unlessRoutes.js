@@ -3,7 +3,7 @@ module.exports = {
       path: [
         {url:"/add-user", method:"POST"},
         {url:"/login", method:"POST"},
-        {url:"/add-attendance/:id", method:"POST"}
+        { url: /^\/add-attendance\/.*/, method: 'POST' }
       ],
     },
   };
