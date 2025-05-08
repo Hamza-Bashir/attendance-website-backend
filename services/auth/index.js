@@ -3,6 +3,7 @@ const {STATUS_CODES,TEXTS} = require("../../config/constants")
 const User = require("../../model/userSchema/index")
 const uploads = require("../../config/multer")
 const bcrypt = require("bcryptjs")
+const {generateToken} = require("../../utilis/jwtToken")
 
 // ------- Add User Api ------------
 
@@ -75,10 +76,13 @@ const loginUser = asyncErrorHandler(async (req,res)=>{
 
     const {_id,name,email:userEmail, role,image} = existingUser
 
+    const token = generateToken(existingUser)
+
 
     res.status(STATUS_CODES.SUCCESS).json({
         statusCode:STATUS_CODES.SUCCESS,
         message:TEXTS.LOGIN,
+        token,
         user:{_id,name,email:userEmail,role,image}
     })
 })
