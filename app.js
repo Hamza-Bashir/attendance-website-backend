@@ -10,6 +10,7 @@ const app = express();
 const path = require("path");
 
 
+
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ limit: '5mb', extended: false }));
@@ -22,6 +23,7 @@ app.get("/test",(req,res)=>{
 
 authenticate.unless = unless;
 app.use(authenticate.unless(authenticateRoutes));
+
 
 
 

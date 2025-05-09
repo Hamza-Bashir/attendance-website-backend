@@ -2,6 +2,7 @@ const { verifyJWTToken } = require("../utilis/jwtToken");
 const { STATUS_CODES, TEXTS } = require("../config/constants");
 
 const authenticate = async (req, res, next) => {
+  
  
   const header = req.get("Authorization");
   if (!header || !header.startsWith("Bearer")) {
@@ -18,9 +19,11 @@ const authenticate = async (req, res, next) => {
         .status(STATUS_CODES.UNAUTHORIZED)
         .json({ message: TEXTS.UNAUTHORIZED });
     } else {
-      req.user = result.decoded;
+      req.user = result.decoded._doc || result.decoded;
      
       next();
+      
+      
     }
     
   } else {

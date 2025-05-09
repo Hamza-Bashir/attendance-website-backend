@@ -18,7 +18,7 @@ const addUser = asyncErrorHandler(async (req, res) => {
             return res.status(STATUS_CODES.FAILED).json({ message: TEXTS.FILE_FAILED, details: err.message });
         }
         
-        const { name, email, password } = req.body;
+        const { name, email, password,role } = req.body;
        
         const imagePath = req.file ? `uploads/${req.file.filename}` : null;
        
@@ -38,7 +38,8 @@ const addUser = asyncErrorHandler(async (req, res) => {
             name,
             email,
             password:hashPassword,
-            image: imagePath
+            image: imagePath,
+            role
         });
         
 
