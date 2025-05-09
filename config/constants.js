@@ -14,6 +14,7 @@ module.exports = {
     TEXTS:{
         SUCCESS:"Record found successfully",
         CREATED:"Record created successfully",
+        DELETED:"Record delete successfully",
         UNAUTHORIZED:"Invalid user",
         NOT_FOUND:"Record not found",
         LOGIN:"User login successfully",
@@ -25,7 +26,8 @@ module.exports = {
         ATTENDANCE:"Add attendance successfully",
         ID_REQUIRED:"Id is required",
         FILE_FAILED:"File upload fail",
-        UPDATED:"Recod updated successfully"
+        UPDATED:"Recod updated successfully",
+        SET_TIME:"Set Time Limit successfully"
     }
 
 

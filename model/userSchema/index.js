@@ -24,7 +24,8 @@ const userSch = new mongoose.Schema({
         type:String
     }
 }, {
-    timestamps:true
+    timestamps:true,
+    strict:false
 })
 
 module.exports = mongoose.model("user", userSch)
