@@ -119,10 +119,14 @@ const updateUser = asyncErrorHandler(async (req,res)=>{
 
     if(req.file){
         const imageName = path.basename(existingUser.image)
-        const oldImagePath = path.join(__dirname, "..", imageName)
+        const rootPath = path.resolve(__dirname, "..")
+        const oldImagePath = path.join(rootPath, "..", "uploads",imageName)
 
-        if(fs.existsSync(oldImagePath)){
+        try {
             fs.unlinkSync(oldImagePath)
+            console.log("Old file deleted successfully")
+        } catch (error) {
+            console.log(error.message)
         }
         imagePath = req.file ? `uploads/${req.file.filename}`:existingUser.image
     }
@@ -140,8 +144,9 @@ const updateUser = asyncErrorHandler(async (req,res)=>{
 
     const updatedUser = await User.findByIdAndUpdate(user_id, query, {new:true})
 
-    res.status(200).json({
-        message:"Updated User successfully"
+    res.status(STATUS_CODES.SUCCESS).json({
+        statusCode:STATUS_CODES.SUCCESS,
+        message:TEXTS.UPDATED
     })
 
 

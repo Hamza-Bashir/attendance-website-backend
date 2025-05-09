@@ -24,7 +24,8 @@ module.exports = {
         ALREADY_PRESENT:"Already present",
         ATTENDANCE:"Add attendance successfully",
         ID_REQUIRED:"Id is required",
-        FILE_FAILED:"File upload fail"
+        FILE_FAILED:"File upload fail",
+        UPDATED:"Recod updated successfully"
     }
 
 
