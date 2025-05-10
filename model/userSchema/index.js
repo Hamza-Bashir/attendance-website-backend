@@ -20,6 +20,9 @@ const userSch = new mongoose.Schema({
         enum:["admin", "employee"],
         default:"employee"
     },
+    lateTimeLimit:{
+        type:Number
+    },
     image:{
         type:String
     }

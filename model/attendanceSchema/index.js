@@ -18,6 +18,10 @@ const attendanceSchema = new mongoose.Schema({
     checkOut:{
         type:Date,
         default:null
+    },
+    isLate:{
+        type:Boolean,
+        default:false
     }
 },{
     timestamps:true

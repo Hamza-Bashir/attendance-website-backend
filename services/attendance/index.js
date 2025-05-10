@@ -1,6 +1,7 @@
 const asyncErrorHandler = require("../../utilis/asyncErrorHandler")
 const {STATUS_CODES,TEXTS} = require("../../config/constants")
 const attendance = require("../../model/attendanceSchema/index")
+const User = require("../../model/userSchema/index")
 
 
 
@@ -8,34 +9,58 @@ const attendance = require("../../model/attendanceSchema/index")
 
 const addAttendance = asyncErrorHandler(async (req,res)=>{
     
-    const {id} = req.params
+    const {user_id} = req.params
 
-    const now = new Date()
-    const startofDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const existingUser = await User.findOne({_id:user_id})
 
-    const existingAttendance = await attendance.findOne({
-        date:startofDay
-    })
-
-    if(existingAttendance){
-        return res.status(STATUS_CODES.CONFLICT).json({
-            statusCode:STATUS_CODES.CONFLICT,
-            message:TEXTS.ALREADY_PRESENT
+    if(!existingUser){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.NOT_FOUND
         })
     }
 
-    const newAttendance = await attendance({
-        user:id,
-        date:startofDay,
-        checkIn:now
+    const now = new Date()
+
+    
+    const startofDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+ 
+    const allowedCheckInTime = new Date(startofDay)
+
+    allowedCheckInTime.setHours(9)
+    allowedCheckInTime.setMinutes(0)
+    allowedCheckInTime.setSeconds(0)
+    allowedCheckInTime.setMilliseconds(0)
+
+    const lateTime = existingUser.lateTimeLimit || 10
+    const allowedLatestTime = new Date(allowedCheckInTime.getTime() + lateTime * 60000)
+
+    const isLate = now > allowedLatestTime
+
+    const existAttendance = await attendance.findOne({
+        date:startofDay
     })
 
-    await newAttendance.save()
+    if(existAttendance){
+
+        return res.status(STATUS_CODES.CONFLICT).json({
+            statusCode:STATUS_CODES.CONFLICT,
+            message:"Already present"
+        })
+    }
+
+    await attendance.create({
+        user:user_id,
+        date:startofDay,
+        checkIn:now,
+        isLate:isLate
+    })
 
     res.status(STATUS_CODES.SUCCESS).json({
         statusCode:STATUS_CODES.SUCCESS,
-        message:TEXTS.ATTENDANCE
+        message:"CheckIn successfully Login"
     })
+
 
 
 })
