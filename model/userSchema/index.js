@@ -21,10 +21,12 @@ const userSch = new mongoose.Schema({
         default:"employee"
     },
     lateTimeLimit:{
-        type:Number
+        type:Number,
+        default:10 
     },
     image:{
         type:String
+        
     }
 }, {
     timestamps:true,
