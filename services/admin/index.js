@@ -2,6 +2,7 @@ const asyncErrorHandler = require("../../utilis/asyncErrorHandler")
 const {STATUS_CODES,TEXTS} = require("../../config/constants")
 const User = require("../../model/userSchema/index")
 const attendance = require("../../model/attendanceSchema/index")
+const Salary = require("../../model/salarySchema/index")
 const path = require("path")
 const fs = require("fs")
 const mongoose = require("mongoose")
@@ -145,4 +146,41 @@ const setLateTimeLimit = asyncErrorHandler(async (req,res)=>{
 })
 
 
-module.exports = {getAllUser, searchUser, deleteUser, getAllattendace, searchAttendanceByName, setLateTimeLimit}
+const addSalary = asyncErrorHandler(async (req,res)=>{
+    const {user_id} = req.params
+    const {salary} = req.body
+
+    if(!user_id){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.ID_REQUIRED
+        })
+    }
+
+    const existingUser = await User.findById(user_id)
+
+    if(!existingUser){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.NOT_FOUND
+        })
+    }
+
+    const newSalary = await Salary.create({
+        user:existingUser._id,
+        baseSalary:salary
+    })
+
+    await User.findByIdAndUpdate(user_id, {
+
+        salary:newSalary
+    })
+
+    res.status(STATUS_CODES.SUCCESS).json({
+        statusCode:STATUS_CODES.SUCCESS,
+        message:"Salary added successfully"
+    })
+})
+
+
+module.exports = {getAllUser, searchUser, deleteUser, getAllattendace, searchAttendanceByName, setLateTimeLimit, addSalary}

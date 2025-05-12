@@ -20,15 +20,14 @@ const userSch = new mongoose.Schema({
         enum:["admin", "employee"],
         default:"employee"
     },
-    lateTimeLimit:{
-        type:Number,
-        default:function(){
-            return this.role !== "admin"?10:undefined
-        }
-    },
     image:{
         type:String
         
+    },
+    salary:{
+        type:mongoose.Types.ObjectId,
+        ref:"salary",
+        default:null
     }
 }, {
     timestamps:true,

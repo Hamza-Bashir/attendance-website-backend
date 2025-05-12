@@ -10,7 +10,8 @@ const timeSchema = new mongoose.Schema({
         required:true
     },
     user_id:{
-        type:mongoose.Types.ObjectId
+        type:mongoose.Types.ObjectId,
+        ref:"user"
     }
 }, {
     timestamps:true

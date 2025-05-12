@@ -1,6 +1,7 @@
 const asyncErrorHandler = require("../../utilis/asyncErrorHandler")
 const {STATUS_CODES,TEXTS} = require("../../config/constants")
 const User = require("../../model/userSchema/index")
+const Salary = require("../../model/salarySchema/index")
 const uploads = require("../../config/multer")
 const bcrypt = require("bcryptjs")
 const {generateToken} = require("../../utilis/jwtToken")
@@ -34,13 +35,23 @@ const addUser = asyncErrorHandler(async (req, res) => {
         const hashPassword = await bcrypt.hash(password, 10)
        
 
-        await User.create({
+        const newUser = await User.create({
             name,
             email,
             password:hashPassword,
             image: imagePath,
-            role
+            role,
         });
+
+        const existingSalary = await Salary.findOne({
+            user:newUser._id
+        })
+
+        if(existingSalary){
+            await User.findByIdAndUpdate(newUser._id, {
+                salary:existingSalary
+            })
+        }
         
 
         res.status(STATUS_CODES.SUCCESS).json({

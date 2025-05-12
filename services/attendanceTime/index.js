@@ -18,10 +18,17 @@ const addTime = asyncErrorHandler(async (req,res)=>{
         })
     }
 
-    const existingTime = await timeSchema.findById({user_id:req.user._id})
+    const existingTime = await timeSchema.findOne({user_id:req.user._id})
 
     if(existingTime){
-        await timeSchema.updateOne()
+        await timeSchema.updateOne({
+            fixCheckIn:setCheckInTime,
+            fixCheckOut:setCheckOutTime
+        })
+        return res.status(STATUS_CODES.SUCCESS).json({
+            statusCode:STATUS_CODES.SUCCESS,
+            message:TEXTS.UPDATED
+        })
     }
 
     await timeSchema.create({
@@ -38,6 +45,25 @@ const addTime = asyncErrorHandler(async (req,res)=>{
 })
 
 
+// ---------------- Get Time -------------
+
+const getTime = asyncErrorHandler(async (req,res)=>{
+    const getData = await timeSchema.find({}, {_id:1, fixCheckIn:1,fixCheckOut:1})
+
+    if(!getData){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.NOT_FOUND
+        })
+    }
+
+    res.status(STATUS_CODES.SUCCESS).json({
+        statusCode:STATUS_CODES.SUCCESS,
+        message:TEXTS.SUCCESS,
+        time:getData
+    })
+})
 
 
-module.exports = {addTime}
+
+module.exports = {addTime, getTime}
