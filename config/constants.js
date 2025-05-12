@@ -27,7 +27,8 @@ module.exports = {
         ID_REQUIRED:"Id is required",
         FILE_FAILED:"File upload fail",
         UPDATED:"Recod updated successfully",
-        SET_TIME:"Set Time Limit successfully"
+        SET_TIME:"Set Time Limit successfully",
+        REQUIRED:"Something is missing"
     }
 
 

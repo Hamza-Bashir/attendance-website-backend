@@ -22,7 +22,9 @@ const userSch = new mongoose.Schema({
     },
     lateTimeLimit:{
         type:Number,
-        default:10 
+        default:function(){
+            return this.role !== "admin"?10:undefined
+        }
     },
     image:{
         type:String
