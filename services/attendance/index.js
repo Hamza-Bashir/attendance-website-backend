@@ -183,9 +183,5 @@ const searchAttendance = asyncErrorHandler(async (req,res)=>{
 })
 
 
-
-
-
-
 module.exports = {addAttendance, addCheckOut, getAllAttendance, searchAttendance}
 

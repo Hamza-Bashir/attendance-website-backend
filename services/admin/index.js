@@ -246,8 +246,4 @@ const generateSalarySlip = asyncErrorHandler(async (req,res)=>{
     })
 })
 
-
-
-
-
 module.exports = {getAllUser, searchUser, deleteUser, getAllattendace, searchAttendanceByName, setLateTimeLimit, addSalary, addLateTimeDeduction, generateSalarySlip}

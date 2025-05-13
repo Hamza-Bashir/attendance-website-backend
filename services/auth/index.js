@@ -102,6 +102,7 @@ const loginUser = asyncErrorHandler(async (req,res)=>{
 
 // ------- Update User Api ------------
 
+
 const updateUser = asyncErrorHandler(async (req,res)=>{
     uploads(req,res, async (err)=>{
         if(err){
