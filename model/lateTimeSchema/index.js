@@ -12,8 +12,9 @@ const lateTimeSchema = new mongoose.Schema({
     lateCountHours:{
         type:Number
     },
-    rateOfDeduction:{
-        type:mongoose.Types.ObjectId
+    rateOfDeductionPerHour:{
+        type:Number,
+        default:50
     },
     totalDeduction:{
         type:Number

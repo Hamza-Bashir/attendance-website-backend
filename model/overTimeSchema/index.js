@@ -13,7 +13,8 @@ const overTimeSchema = new mongoose.Schema({
         type:Number
     },
     rateOfIncrement:{
-        type:Number
+        type:Number,
+        default:100
     },
     totalIncrement:{
         type:Number

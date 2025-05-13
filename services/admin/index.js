@@ -4,6 +4,8 @@ const User = require("../../model/userSchema/index")
 const attendance = require("../../model/attendanceSchema/index")
 const Salary = require("../../model/salarySchema/index")
 const path = require("path")
+const lateTimeCount = require("../../model/lateTimeSchema/index")
+const overTimeCount = require("../../model/overTimeSchema/index")
 const fs = require("fs")
 const mongoose = require("mongoose")
 
@@ -134,6 +136,8 @@ const searchAttendanceByName = asyncErrorHandler(async (req,res)=>{
     })
 })
 
+// ----------- Set late time limit -------
+
 const setLateTimeLimit = asyncErrorHandler(async (req,res)=>{
     const {limitTime} = req.body
 
@@ -144,6 +148,9 @@ const setLateTimeLimit = asyncErrorHandler(async (req,res)=>{
         message:TEXTS.SET_TIME
     })
 })
+
+
+// ----------- Add salary -------
 
 
 const addSalary = asyncErrorHandler(async (req,res)=>{
@@ -183,4 +190,64 @@ const addSalary = asyncErrorHandler(async (req,res)=>{
 })
 
 
-module.exports = {getAllUser, searchUser, deleteUser, getAllattendace, searchAttendanceByName, setLateTimeLimit, addSalary}
+// ----------- Add late time rate deduction -------
+
+const addLateTimeDeduction = asyncErrorHandler(async (req,res)=>{
+    const {rate} = req.body
+
+    await lateTimeCount.updateMany(
+        {},
+        {$set:{rateOfDeductionPerHour:rate}}
+    )
+
+    res.status(STATUS_CODES.SUCCESS).json({
+        statusCode:STATUS_CODES.SUCCESS,
+        message:TEXTS.UPDATED
+    })
+})
+
+// ----------- Generate salary slip -------
+
+const generateSalarySlip = asyncErrorHandler(async (req,res)=>{
+    const now = new Date()
+    const month = now.getMonth()
+    const {user_id} = req.params
+    const existingSalary = await Salary.findOne({user:user_id})
+    const {baseSalary} = existingSalary
+
+    const existingLateRecord = await lateTimeCount.findOne({user:user_id})
+
+    const {lateCountHours,rateOfDeductionPerHour} = existingLateRecord
+
+    const lateTimeDeductionPrice = lateCountHours * rateOfDeductionPerHour
+
+    const existingOverTimeRecord = await overTimeCount.findOne({
+        user:user_id
+    })
+
+    const {overTimeCountHour,rateOfIncrement} = existingOverTimeRecord
+
+    const overTimeIncrementPrice = overTimeCountHour * rateOfIncrement
+
+    const finalSalary = (baseSalary + overTimeIncrementPrice) - lateTimeDeductionPrice
+
+    await Salary.create({
+        user:user_id,
+        month,
+        baseSalary,
+        lateTimeDeductionPrice,
+        overTimeIncrementPrice,
+        finalSalary
+    })
+
+    res.status(STATUS_CODES.SUCCESS).json({
+        statusCode:STATUS_CODES.SUCCESS,
+        message:"Salary slip generate successfully"
+    })
+})
+
+
+
+
+
+module.exports = {getAllUser, searchUser, deleteUser, getAllattendace, searchAttendanceByName, setLateTimeLimit, addSalary, addLateTimeDeduction, generateSalarySlip}

@@ -6,8 +6,17 @@ const salarySchema = new mongoose.Schema({
         ref:"user",
         required:true
     },
+    month:{
+        type:String
+    },
     baseSalary:{
         type:Number,  
+    },
+    lateTimeDeductionPrice:{
+        type:Number
+    },
+    overTimeIncrementPrice:{
+        type:Number
     },
     finalSalary:{
         type:Number

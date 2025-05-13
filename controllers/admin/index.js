@@ -10,5 +10,6 @@ router.get("/admin/all-attendance", authorize("admin"), adminService.getAllatten
 router.get("/admin/search-attendance", authorize("admin"), adminService.searchAttendanceByName)
 router.post("/admin/set-lateTime", adminService.setLateTimeLimit)
 router.post("/admin/add-salary/:user_id", authorize("admin"), adminService.addSalary)
+router.post("/admin/generate-slip/:user_id", authorize("admin"), adminService.generateSalarySlip)
 
 module.exports = router
