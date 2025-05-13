@@ -2,6 +2,9 @@ const asyncErrorHandler = require("../../utilis/asyncErrorHandler")
 const {STATUS_CODES,TEXTS} = require("../../config/constants")
 const attendance = require("../../model/attendanceSchema/index")
 const User = require("../../model/userSchema/index")
+const lateTimeCount = require("../../model/lateTimeSchema/index")
+const overTimeCount = require("../../model/overTimeSchema/index")
+const axios = require("axios")
 
 
 
@@ -21,48 +24,54 @@ const addAttendance = asyncErrorHandler(async (req,res)=>{
     }
 
     const now = new Date()
+    const response = await axios.get("http://localhost:3001/get-time")
+    const fixTime = response.data.time
 
-    
-    const startofDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
- 
-    const allowedCheckInTime = new Date(startofDay)
+    const fixCheckInTime = fixTime[0].fixCheckIn
 
-    allowedCheckInTime.setHours(9)
-    allowedCheckInTime.setMinutes(0)
-    allowedCheckInTime.setSeconds(0)
-    allowedCheckInTime.setMilliseconds(0)
+    const getDate = now.toISOString().split("T")[0]
 
-    const lateTime = existingUser.lateTimeLimit || 10
-    const allowedLatestTime = new Date(allowedCheckInTime.getTime() + lateTime * 60000)
+    const fixCheckInFullDate = new Date(`${getDate} ${fixCheckInTime}`)
 
-    const isLate = now > allowedLatestTime
+    const different = now - fixCheckInFullDate
 
-    const existAttendance = await attendance.findOne({
-        date:startofDay
-    })
+    const diffInMinutes = Math.floor(different / (1000*60))
+    const totalHour = (diffInMinutes / 60).toFixed(1)
 
-    if(existAttendance){
+    const isLate = Math.floor((now-fixCheckInFullDate) / (1000 * 60)) > 0
 
-        return res.status(STATUS_CODES.CONFLICT).json({
-            statusCode:STATUS_CODES.CONFLICT,
-            message:"Already present"
+    const existingRecord = await lateTimeCount.findOne({user:user_id})
+
+    if(existingRecord){
+        const updateDiffInMinutes = existingRecord.lateCountMinute + diffInMinutes
+
+        const updateTotalHour = existingRecord.lateCountHours + totalHour
+
+        await lateTimeCount.updateOne(
+            {user:user_id},
+            {$set:{lateCountMinute:updateDiffInMinutes, lateCountHours:updateTotalHour}}
+        )
+    }else{
+        await lateTimeCount.create({
+            user:user_id,
+            lateCountMinute:diffInMinutes,
+            lateCountHours:totalHour
         })
     }
 
+    
+
     await attendance.create({
         user:user_id,
-        date:startofDay,
+        date:getDate,
         checkIn:now,
-        isLate:isLate
+        isLate
     })
 
     res.status(STATUS_CODES.SUCCESS).json({
         statusCode:STATUS_CODES.SUCCESS,
-        message:"CheckIn successfully Login"
+        message:TEXTS.SUCCESS
     })
-
-
-
 })
 
 
@@ -78,6 +87,39 @@ const addCheckOut = asyncErrorHandler(async (req,res)=>{
         return res.status(STATUS_CODES.NOT_FOUND).json({
             statusCode:STATUS_CODES.NOT_FOUND,
             message:TEXTS.ID_REQUIRED
+        })
+    }
+
+    const response = await axios.get("http://localhost:3001/get-time")
+    const fixTime = response.data.time
+
+    const fixCheckOutTime = fixTime[0].fixCheckOut
+
+    const getDate = now.toISOString().split("T")[0]
+
+    const fixCheckOutFullDate = new Date(`${getDate} ${fixCheckOutTime}`)
+
+    const different = now - fixCheckOutFullDate
+
+    const diffInMinutes = Math.floor(different / (1000*60))
+    const totalHour = (diffInMinutes / 60).toFixed(1)
+
+    const existingRecord = await overTimeCount.findOne({user:user_id})
+
+    if(existingRecord){
+        const updateDiffInMinutes = existingRecord.overTimeCountMinute + diffInMinutes
+
+        const updateTotalHour = existingRecord.overTimeCountHour + totalHour
+
+        await overTimeCount.updateOne(
+            {user:user_id},
+            {$set:{overTimeCountMinute:updateDiffInMinutes, overTimeCountHour:updateTotalHour}}
+        )
+    }else{
+        await overTimeCount.create({
+            user:user_id,
+            overTimeCountMinute:diffInMinutes,
+            overTimeCountHour:totalHour
         })
     }
 

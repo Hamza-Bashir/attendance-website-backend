@@ -2,7 +2,7 @@ const asyncErrorHandler = require("../../utilis/asyncErrorHandler")
 
 const {STATUS_CODES, TEXTS} = require("../../config/constants")
 
-const timeSchema = require("../../model/attendanceTimeSchema.js/index")
+const timeSchema = require("../../model/attendanceTimeSchema/index")
 
 
 
