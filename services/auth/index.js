@@ -23,6 +23,12 @@ const addUser = asyncErrorHandler(async (req, res) => {
        
         const imagePath = req.file ? `uploads/${req.file.filename}` : null;
        
+        if(!name || !email || !password){
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                statusCode:STATUS_CODES.NOT_FOUND,
+                message:"Something is missing"
+            })
+        }
  
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -68,6 +74,8 @@ const addUser = asyncErrorHandler(async (req, res) => {
 
 const loginUser = asyncErrorHandler(async (req,res)=>{
     const {email,password} = req.body
+
+    
 
     const existingUser = await User.findOne({email})
 
