@@ -10,69 +10,83 @@ const axios = require("axios")
 
 // --------- Add attendance ----------
 
-const addAttendance = asyncErrorHandler(async (req,res)=>{
-    
-    const {user_id} = req.params
+const addAttendance = asyncErrorHandler(async (req, res) => {
+    const _id = req.user._id;
+  
+    const existingUser = await User.findOne({ _id });
+  
+    if (!existingUser) {
+      return res.status(STATUS_CODES.NOT_FOUND).json({
+        statusCode: STATUS_CODES.NOT_FOUND,
+        message: TEXTS.NOT_FOUND,
+      });
+    }
+  
+    const now = new Date();
+  
+    // Get fixed check-in time from another API
+    const response = await axios.get("http://localhost:3001/get-time");
+    const fixTime = response.data.time;
+    const fixCheckInTime = fixTime[0].fixCheckIn;
+  
+    // Build date string
+    const getDate = now.toISOString().split("T")[0];
+    const fixCheckInFullDate = new Date(`${getDate} ${fixCheckInTime}`);
+  
+    // Calculate difference in time
+    const different = now - fixCheckInFullDate;
+    const diffInMinutes = Math.floor(different / (1000 * 60));
+    const totalHour = parseFloat((diffInMinutes / 60).toFixed(1)); // Convert to number
+  
+    const isLate = diffInMinutes > 0;
 
-    const existingUser = await User.findOne({_id:user_id})
+    const existingAttendance = await attendance.findOne({user:_id,date:getDate})
 
-    if(!existingUser){
-        return res.status(STATUS_CODES.NOT_FOUND).json({
-            statusCode:STATUS_CODES.NOT_FOUND,
-            message:TEXTS.NOT_FOUND
+    if(existingAttendance){
+        return res.status(STATUS_CODES.CONFLICT).json({
+            statusCode:STATUS_CODES.CONFLICT,
+            message:"You already check in"
         })
     }
-
-    const now = new Date()
-    const response = await axios.get("http://localhost:3001/get-time")
-    const fixTime = response.data.time
-
-    const fixCheckInTime = fixTime[0].fixCheckIn
-
-    const getDate = now.toISOString().split("T")[0]
-
-    const fixCheckInFullDate = new Date(`${getDate} ${fixCheckInTime}`)
-
-    const different = now - fixCheckInFullDate
-
-    const diffInMinutes = Math.floor(different / (1000*60))
-    const totalHour = (diffInMinutes / 60).toFixed(1)
-
-    const isLate = Math.floor((now-fixCheckInFullDate) / (1000 * 60)) > 0
-
-    const existingRecord = await lateTimeCount.findOne({user:user_id})
-
-    if(existingRecord){
-        const updateDiffInMinutes = existingRecord.lateCountMinute + diffInMinutes
-
-        const updateTotalHour = existingRecord.lateCountHours + totalHour
-
-        await lateTimeCount.updateOne(
-            {user:user_id},
-            {$set:{lateCountMinute:updateDiffInMinutes, lateCountHours:updateTotalHour}}
-        )
-    }else{
-        await lateTimeCount.create({
-            user:user_id,
-            lateCountMinute:diffInMinutes,
-            lateCountHours:totalHour
-        })
+  
+    const existingRecord = await lateTimeCount.findOne({ user: _id });
+  
+    if (existingRecord) {
+      const updateDiffInMinutes = Number(existingRecord.lateCountMinute) + diffInMinutes;
+      const updateTotalHour = Number(existingRecord.lateCountHours) + totalHour;
+  
+      await lateTimeCount.updateOne(
+        { user: _id },
+        {
+          $set: {
+            lateCountMinute: updateDiffInMinutes,
+            lateCountHours: updateTotalHour,
+          },
+        }
+      );
+    } else {
+      await lateTimeCount.create({
+        user: _id,
+        lateCountMinute: diffInMinutes,
+        lateCountHours: totalHour,
+      });
     }
-
+  
     
 
     await attendance.create({
-        user:user_id,
-        date:getDate,
-        checkIn:now,
-        isLate
-    })
-
+      user: _id,
+      date: getDate,
+      checkIn: now,
+      isLate,
+    });
+  
     res.status(STATUS_CODES.SUCCESS).json({
-        statusCode:STATUS_CODES.SUCCESS,
-        message:TEXTS.SUCCESS
-    })
-})
+      statusCode: STATUS_CODES.SUCCESS,
+      message: "Add check in successfully",
+    });
+  });
+  
 
 
 // --------- Add checkOutTime ----------
@@ -136,12 +150,11 @@ const addCheckOut = asyncErrorHandler(async (req,res)=>{
 // --------- Get all attendance ----------
 
 const getAllAttendance = asyncErrorHandler(async (req,res)=>{
-    const currentdate = new Date()
-    currentdate.setHours(0,0,0,0)
+    const id = req.user._id
 
     const previousAttendance = await attendance.find(
         {
-            date:{$lt:currentdate}
+            user:id
         }
     ).populate("user")
 
