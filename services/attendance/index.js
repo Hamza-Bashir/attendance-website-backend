@@ -92,12 +92,12 @@ const addAttendance = asyncErrorHandler(async (req, res) => {
 // --------- Add checkOutTime ----------
 
 const addCheckOut = asyncErrorHandler(async (req,res)=>{
-    const {user_id} = req.params
+    const _id = req.user._id
     const {attendance_id} = req.body
 
     const now = new Date()
 
-    if(!user_id){
+    if(!_id){
         return res.status(STATUS_CODES.NOT_FOUND).json({
             statusCode:STATUS_CODES.NOT_FOUND,
             message:TEXTS.ID_REQUIRED
@@ -116,24 +116,33 @@ const addCheckOut = asyncErrorHandler(async (req,res)=>{
     const different = now - fixCheckOutFullDate
 
     const diffInMinutes = Math.floor(different / (1000*60))
-    const totalHour = (diffInMinutes / 60).toFixed(1)
+    const totalHour = Number((diffInMinutes / 60).toFixed(1))
 
-    const existingRecord = await overTimeCount.findOne({user:user_id})
+    const existingRecord = await overTimeCount.findOne({user:_id})
 
     if(existingRecord){
-        const updateDiffInMinutes = existingRecord.overTimeCountMinute + diffInMinutes
+        const updateDiffInMinutes = Number(existingRecord.overTimeCountMinute) + diffInMinutes
 
-        const updateTotalHour = existingRecord.overTimeCountHour + totalHour
+        const updateTotalHour = Number(existingRecord.overTimeCountHour) + totalHour
 
         await overTimeCount.updateOne(
-            {user:user_id},
+            {user:_id},
             {$set:{overTimeCountMinute:updateDiffInMinutes, overTimeCountHour:updateTotalHour}}
         )
     }else{
         await overTimeCount.create({
-            user:user_id,
+            user:_id,
             overTimeCountMinute:diffInMinutes,
             overTimeCountHour:totalHour
+        })
+    }
+
+    const attendanceRecord = await attendance.findById(attendance_id)
+
+    if(attendanceRecord.checkOut){
+        return res.status(STATUS_CODES.CONFLICT).json({
+            statusCode:STATUS_CODES.CONFLICT,
+            message:"You already check out"
         })
     }
 
@@ -195,6 +204,43 @@ const searchAttendance = asyncErrorHandler(async (req,res)=>{
     })
 })
 
+// --------- Get single attendance ----------
 
-module.exports = {addAttendance, addCheckOut, getAllAttendance, searchAttendance}
+const getSingleAttendance = asyncErrorHandler(async (req,res)=>{
+    const _id = req.user._id
+
+    if(!_id){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.ID_REQUIRED
+        })
+    }
+
+    const existingUser = await User.findOne({_id:_id})
+
+    if(!existingUser){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.NOT_FOUND
+        })
+    }
+
+    const singleRecord = await attendance.findOne({user:_id}).sort({createdAt:-1})
+
+    if(!singleRecord){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.NOT_FOUND
+        })
+    }
+
+    res.status(STATUS_CODES.SUCCESS).json({
+        statusCode:STATUS_CODES.SUCCESS,
+        message:TEXTS.SUCCESS,
+        singleRecord
+    })
+})
+
+
+module.exports = {addAttendance, addCheckOut, getAllAttendance, searchAttendance, getSingleAttendance}
 
