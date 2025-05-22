@@ -246,4 +246,42 @@ const generateSalarySlip = asyncErrorHandler(async (req,res)=>{
     })
 })
 
-module.exports = {getAllUser, searchUser, deleteUser, getAllattendace, searchAttendanceByName, setLateTimeLimit, addSalary, addLateTimeDeduction, generateSalarySlip}
+
+// ----------- Get salary slip -------
+
+const getSalarySlip = asyncErrorHandler(async (req,res)=>{
+    const {_id} = req.user
+
+    if(!_id){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.ID_REQUIRED
+        })
+    }
+
+    const existingUser = await User.findOne({_id:_id})
+
+    if(!existingUser){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            message:TEXTS.NOT_FOUND
+        })
+    }
+
+    const existingSalary = await Salary.findOne({user:_id}).sort({createdAt:-1}).populate("user")
+
+    if(!existingSalary){
+        return res.status(STATUS_CODES.NOT_FOUND).json({
+            statusCode:STATUS_CODES.NOT_FOUND,
+            messages:TEXTS.NOT_FOUND
+        })
+    }
+
+    res.status(STATUS_CODES.SUCCESS).json({
+        statusCode:STATUS_CODES.SUCCESS,
+        message:"Salary slip found successfully",
+        existingSalary
+    })
+})
+
+module.exports = {getAllUser, searchUser, deleteUser, getAllattendace, searchAttendanceByName, setLateTimeLimit, addSalary, addLateTimeDeduction, generateSalarySlip, getSalarySlip}
